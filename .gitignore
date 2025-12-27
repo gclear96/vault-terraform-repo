@@ -1,0 +1,14 @@
+.terraform/
+
+# Terraform/OpenTofu state (DO NOT COMMIT)
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Local-only working directory for sensitive material (DO NOT COMMIT)
+out/
+
+# Local override var files (often contain secrets)
+*.tfvars
+*.tfvars.json
