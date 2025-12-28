@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          terraform init -input=false
+          terraform init -input=false -backend=false
 
       - name: Terraform validate
         shell: bash
@@ -52,6 +52,10 @@ jobs:
       TF_IN_AUTOMATION: "1"
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+      TF_S3_ENDPOINT: ${{ secrets.TF_S3_ENDPOINT }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: us-east-1
       TF_VAR_token_reviewer_jwt: ${{ secrets.TF_VAR_token_reviewer_jwt }}
       TF_VAR_kubernetes_ca_cert_pem: ${{ secrets.TF_VAR_kubernetes_ca_cert_pem }}
     steps:
@@ -78,6 +82,9 @@ jobs:
           set -euo pipefail
           : "${VAULT_ADDR:?Set Forgejo secret VAULT_ADDR (e.g. http://platform-vault.vault.svc:8200)}"
           : "${VAULT_TOKEN:?Set Forgejo secret VAULT_TOKEN (scoped token; avoid long-lived root)}"
+          : "${TF_S3_ENDPOINT:?Set Forgejo secret TF_S3_ENDPOINT (e.g. http://platform-garage.garage.svc:3900)}"
+          : "${AWS_ACCESS_KEY_ID:?Set Forgejo secret AWS_ACCESS_KEY_ID (Garage S3 key id)}"
+          : "${AWS_SECRET_ACCESS_KEY:?Set Forgejo secret AWS_SECRET_ACCESS_KEY (Garage S3 secret key)}"
           : "${TF_VAR_token_reviewer_jwt:?Set Forgejo secret TF_VAR_token_reviewer_jwt}"
           : "${TF_VAR_kubernetes_ca_cert_pem:?Set Forgejo secret TF_VAR_kubernetes_ca_cert_pem}"
 
@@ -85,7 +92,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          terraform init -input=false
+          terraform init -input=false \
+            -backend-config="endpoint=${TF_S3_ENDPOINT}" \
+            -backend-config="force_path_style=true" \
+            -backend-config="skip_credentials_validation=true" \
+            -backend-config="skip_metadata_api_check=true" \
+            -backend-config="skip_region_validation=true"
 
       - name: Import existing resources (idempotent)
         shell: bash
@@ -98,4 +110,3 @@ jobs:
         run: |
           set -euo pipefail
           terraform plan -input=false -no-color
-

@@ -22,7 +22,7 @@ Manages Vault configuration declaratively using the Terraform Vault provider.
 
 Terraform state will include **sensitive** fields if you provide them (notably `token_reviewer_jwt`, and potentially the Kubernetes CA cert depending on your inputs). Do **not** commit state or `*.tfvars`.
 
-Default backend writes local state to `out/terraform.tfstate` (gitignored). If you want remote state, use a backend that provides encryption-at-rest + access control (and accept that sensitive values are still present in state).
+This repo uses an S3 backend (`backend.tf`) intended for an in-cluster S3-compatible store (Garage). Even with remote state, sensitive values can still end up in state, so treat state as a secret.
 
 ## Prereqs
 
@@ -31,6 +31,49 @@ Default backend writes local state to `out/terraform.tfstate` (gitignored). If y
 - `curl`
 - `jq`
 - Kubeconfig: `../talos-proxmox-bootstrap-repo/out/talos-admin-1.kubeconfig`
+
+## Terraform state backend (Garage / S3)
+
+Garage runs in the `garage` namespace and exposes an in-cluster S3 API via Service `platform-garage` on port `3900`.
+
+### One-time: create bucket + key (stores secret locally, gitignored)
+
+This repo expects a bucket named `tf-state` and a key with read/write access.
+
+Create them (no secrets printed to stdout; credentials are written to local gitignored files under `out/`):
+
+```bash
+export KUBECONFIG=../talos-proxmox-bootstrap-repo/out/talos-admin-1.kubeconfig
+./scripts/bootstrap-garage-tfstate.sh
+```
+
+Files created:
+
+- `out/garage-tfstate-key.txt` (contains **secret key**; do not share/commit)
+- `out/garage-tfstate.env` (convenience env file; do not share/commit)
+
+### Local `terraform init` with port-forward
+
+In one terminal:
+
+```bash
+export KUBECONFIG=../talos-proxmox-bootstrap-repo/out/talos-admin-1.kubeconfig
+./scripts/port-forward-garage-s3.sh
+```
+
+In another terminal:
+
+```bash
+source out/garage-tfstate.env
+./scripts/tf-init-garage.sh
+```
+
+### CI `terraform init` (in-cluster runner)
+
+Set these Forgejo repo secrets:
+
+- `TF_S3_ENDPOINT` = `http://platform-garage.garage.svc:3900`
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` = the Garage key credentials
 
 ## Vault token requirements
 
@@ -113,7 +156,7 @@ Note: Your cluster already has these resources created by the temporary GitOps b
 Note: The first `terraform init` will download the Vault provider from the Terraform registry. In this environment, that may require explicit network approval.
 
 ```bash
-terraform init
+./scripts/tf-init-garage.sh
 terraform fmt
 terraform validate
 terraform plan
