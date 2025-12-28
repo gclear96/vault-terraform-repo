@@ -120,6 +120,24 @@ terraform plan
 terraform apply
 ```
 
+## CI/CD (Forgejo Actions)
+
+This repo includes Forgejo Actions workflows under `.forgejo/workflows/`:
+
+- `terraform.yml`: on PR → fmt/validate; on push to `main` → import + plan
+- `apply.yml`: manual (`workflow_dispatch`) → import + apply
+
+### Required Forgejo secrets
+
+Set these repo secrets in Forgejo:
+
+- `VAULT_ADDR` (example: `http://platform-vault.vault.svc:8200`)
+- `VAULT_TOKEN` (use a scoped token; avoid long-lived root)
+- `TF_VAR_token_reviewer_jwt` (sensitive; required to manage `auth/kubernetes/config`)
+- `TF_VAR_kubernetes_ca_cert_pem` (sensitive; required to manage `auth/kubernetes/config`)
+
+Note: until you deploy an in-cluster state backend (Garage/S3, etc.), the workflows intentionally rebuild local state each run by importing from the live Vault instance.
+
 ## Import existing resources (recommended)
 
 Run from this repo directory after `terraform init`:
