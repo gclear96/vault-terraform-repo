@@ -18,8 +18,9 @@ source "${ENV_FILE}"
 export TF_S3_ENDPOINT AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION
 
 terraform init -input=false \
-  -backend-config="endpoint=${TF_S3_ENDPOINT}" \
+  -backend-config="endpoints.s3=${TF_S3_ENDPOINT}" \
   -backend-config="force_path_style=true" \
   -backend-config="skip_credentials_validation=true" \
+  -backend-config="skip_requesting_account_id=true" \
   -backend-config="skip_metadata_api_check=true" \
   -backend-config="skip_region_validation=true"
