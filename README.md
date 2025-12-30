@@ -167,8 +167,8 @@ terraform apply
 
 This repo includes Forgejo Actions workflows under `.forgejo/workflows/`:
 
-- `terraform.yml`: on PR → fmt/validate; on push to `main` → import + plan
-- `apply.yml`: manual (`workflow_dispatch`) → import + apply
+- `terraform.yml`: on PR → fmt/validate; on push to `main` → import + plan + **auto-apply (non-destructive only)**
+- `apply.yml`: manual (`workflow_dispatch`) → import + plan + apply (supports destructive when explicitly allowed)
 
 ### Required Forgejo secrets
 
@@ -176,10 +176,10 @@ Set these repo secrets in Forgejo:
 
 - `VAULT_ADDR` (example: `http://platform-vault.vault.svc:8200`)
 - `VAULT_TOKEN` (use a scoped token; avoid long-lived root)
-- `TF_VAR_token_reviewer_jwt` (sensitive; required to manage `auth/kubernetes/config`)
-- `TF_VAR_kubernetes_ca_cert_pem` (sensitive; required to manage `auth/kubernetes/config`)
+- `TF_S3_ENDPOINT` (example: `http://platform-garage.garage.svc:3900`)
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (Garage S3 key credentials)
 
-Note: until you deploy an in-cluster state backend (Garage/S3, etc.), the workflows intentionally rebuild local state each run by importing from the live Vault instance.
+Note: CI sets `TF_VAR_use_vault_local_sa_token=true` to avoid storing a Kubernetes reviewer JWT in Terraform state. Ensure the Vault ServiceAccount has TokenReview RBAC (see `talos-proxmox-platform-repo/clusters/homelab/bootstrap/rbac-vault-tokenreview.yaml`).
 
 ## Import existing resources (recommended)
 

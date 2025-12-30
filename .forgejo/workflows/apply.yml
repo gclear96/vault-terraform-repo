@@ -2,6 +2,15 @@ name: terraform-apply
 
 on:
   workflow_dispatch:
+    inputs:
+      allow_destructive:
+        description: "Allow delete/replace actions in Terraform plan"
+        required: true
+        default: "false"
+
+concurrency:
+  group: vault-terraform
+  cancel-in-progress: false
 
 jobs:
   apply:
@@ -14,25 +23,27 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: garage
-      TF_VAR_token_reviewer_jwt: ${{ secrets.TF_VAR_token_reviewer_jwt }}
-      TF_VAR_kubernetes_ca_cert_pem: ${{ secrets.TF_VAR_kubernetes_ca_cert_pem }}
+      TF_VAR_use_vault_local_sa_token: "true"
+      ALLOW_DESTRUCTIVE: ${{ inputs.allow_destructive }}
     steps:
       - name: Checkout
         uses: https://code.forgejo.org/actions/checkout@v4
 
-      - name: Install terraform (if missing)
+      - name: Install terraform + jq (if missing)
         shell: bash
         run: |
           set -euo pipefail
           if command -v terraform >/dev/null 2>&1; then
             terraform version
-            exit 0
+          else
+            sudo apt-get update
+            sudo apt-get install -y unzip
+            curl -fsSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.14.3/terraform_1.14.3_linux_amd64.zip
+            sudo unzip -o /tmp/terraform.zip -d /usr/local/bin
+            terraform version
           fi
           sudo apt-get update
-          sudo apt-get install -y unzip
-          curl -fsSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.14.3/terraform_1.14.3_linux_amd64.zip
-          sudo unzip -o /tmp/terraform.zip -d /usr/local/bin
-          terraform version
+          sudo apt-get install -y jq
 
       - name: Guard: required secrets
         shell: bash
@@ -43,8 +54,6 @@ jobs:
           : "${TF_S3_ENDPOINT:?Set Forgejo secret TF_S3_ENDPOINT (e.g. http://platform-garage.garage.svc:3900)}"
           : "${AWS_ACCESS_KEY_ID:?Set Forgejo secret AWS_ACCESS_KEY_ID (Garage S3 key id)}"
           : "${AWS_SECRET_ACCESS_KEY:?Set Forgejo secret AWS_SECRET_ACCESS_KEY (Garage S3 secret key)}"
-          : "${TF_VAR_token_reviewer_jwt:?Set Forgejo secret TF_VAR_token_reviewer_jwt}"
-          : "${TF_VAR_kubernetes_ca_cert_pem:?Set Forgejo secret TF_VAR_kubernetes_ca_cert_pem}"
 
       - name: Terraform init
         shell: bash
@@ -65,8 +74,28 @@ jobs:
           set -euo pipefail
           ./scripts/import-existing.sh
 
-      - name: Terraform apply
+      - name: Terraform plan (save)
         shell: bash
         run: |
           set -euo pipefail
-          terraform apply -auto-approve -input=false -no-color
+          terraform plan -input=false -no-color -out=plan.tfplan
+
+      - name: Guard: destructive plan requires allow_destructive=true
+        if: ${{ env.ALLOW_DESTRUCTIVE != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          terraform show -json plan.tfplan \
+            | jq -e '
+                [.resource_changes[]?.change.actions] as $a
+                | any($a[]; index("delete") != null)
+                  or any($a[]; (. == ["create","delete"]) or (. == ["delete","create"]))
+              ' >/dev/null \
+            && { echo "Plan includes delete/replace; re-run workflow with allow_destructive=true." >&2; exit 3; } \
+            || echo "Plan is non-destructive; proceeding."
+
+      - name: Terraform apply (from saved plan)
+        shell: bash
+        run: |
+          set -euo pipefail
+          terraform apply -auto-approve -input=false -no-color plan.tfplan
