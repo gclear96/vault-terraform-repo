@@ -55,7 +55,7 @@ jobs:
       TF_S3_ENDPOINT: ${{ secrets.TF_S3_ENDPOINT }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: us-east-1
+      AWS_REGION: garage
       TF_VAR_token_reviewer_jwt: ${{ secrets.TF_VAR_token_reviewer_jwt }}
       TF_VAR_kubernetes_ca_cert_pem: ${{ secrets.TF_VAR_kubernetes_ca_cert_pem }}
     steps:
@@ -94,6 +94,7 @@ jobs:
           set -euo pipefail
           terraform init -input=false \
             -backend-config="endpoint=${TF_S3_ENDPOINT}" \
+            -backend-config="region=${AWS_REGION}" \
             -backend-config="force_path_style=true" \
             -backend-config="skip_credentials_validation=true" \
             -backend-config="skip_metadata_api_check=true" \

@@ -44,7 +44,7 @@ else
 # Garage S3 credentials for Terraform state (DO NOT COMMIT)
 AWS_ACCESS_KEY_ID=${KEY_ID}
 AWS_SECRET_ACCESS_KEY=${SECRET_KEY}
-AWS_REGION=us-east-1
+AWS_REGION=garage
 TF_S3_ENDPOINT=http://127.0.0.1:3900
 TF_S3_BUCKET=${BUCKET}
 EOF

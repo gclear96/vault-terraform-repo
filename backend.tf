@@ -6,6 +6,6 @@ terraform {
   backend "s3" {
     bucket = "tf-state"
     key    = "vault/terraform.tfstate"
-    region = "us-east-1"
+    region = "garage"
   }
 }
