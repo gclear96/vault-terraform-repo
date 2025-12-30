@@ -15,7 +15,8 @@ source "${ENV_FILE}"
 : "${AWS_ACCESS_KEY_ID:?Missing AWS_ACCESS_KEY_ID in ${ENV_FILE}}"
 : "${AWS_SECRET_ACCESS_KEY:?Missing AWS_SECRET_ACCESS_KEY in ${ENV_FILE}}"
 
-AWS_REGION="${AWS_REGION:-garage}"
+# Garage advertises region "garage" and expects SigV4 requests to use it.
+AWS_REGION="garage"
 export TF_S3_ENDPOINT AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION
 
 terraform init -input=false \
