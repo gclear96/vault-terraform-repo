@@ -81,7 +81,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-      - name: Guard: required secrets
+      - name: "Guard: required secrets"
         shell: bash
         run: |
           set -euo pipefail
@@ -116,7 +116,7 @@ jobs:
           set -euo pipefail
           terraform plan -input=false -no-color -out=plan.tfplan
 
-      - name: Guard: block destructive changes by default
+      - name: "Guard: block destructive changes by default"
         shell: bash
         run: |
           set -euo pipefail
