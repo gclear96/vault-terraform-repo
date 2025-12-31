@@ -97,7 +97,7 @@ variable "external_secrets_role_bound_service_account_names" {
 variable "external_secrets_role_bound_service_account_namespaces" {
   type        = list(string)
   description = "Kubernetes namespaces allowed to authenticate to the external-secrets role."
-  default     = ["authentik", "forgejo", "external-secrets"]
+  default     = ["authentik", "forgejo", "forgejo-runner", "external-secrets"]
 }
 
 variable "external_secrets_role_token_ttl_seconds" {
