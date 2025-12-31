@@ -49,6 +49,11 @@ resource "vault_policy" "vault_bootstrap" {
   policy = file("${path.module}/policies/vault-bootstrap.hcl")
 }
 
+resource "vault_policy" "terraform_vault" {
+  name   = var.terraform_vault_policy_name
+  policy = file("${path.module}/policies/terraform-vault.hcl")
+}
+
 resource "vault_kubernetes_auth_backend_role" "external_secrets" {
   backend                          = vault_auth_backend.kubernetes.path
   role_name                        = var.external_secrets_role_name

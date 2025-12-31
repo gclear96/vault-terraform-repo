@@ -84,6 +84,8 @@ The `VAULT_TOKEN` you use for Terraform must be able to:
 - Write/read the `external-secrets` policy (`sys/policies/acl/*`)
 - Manage the `kv/` mount (`sys/mounts/*`)
 
+This repo defines a recommended automation policy at `policies/terraform-vault.hcl` and manages it as `vault_policy.terraform_vault` (name: `terraform-vault` by default). Use a token with that policy for CI.
+
 ## Connect to Vault (port-forward)
 
 In one terminal:

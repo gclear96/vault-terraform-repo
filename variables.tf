@@ -111,3 +111,9 @@ variable "vault_bootstrap_policy_name" {
   description = "Name of the policy used for one-time bootstrap operations."
   default     = "vault-bootstrap"
 }
+
+variable "terraform_vault_policy_name" {
+  type        = string
+  description = "Name of the policy used by Terraform automation tokens."
+  default     = "terraform-vault"
+}
