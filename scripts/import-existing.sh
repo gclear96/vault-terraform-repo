@@ -19,4 +19,5 @@ import_if_missing vault_kubernetes_auth_backend_config.this auth/kubernetes/conf
 import_if_missing vault_kubernetes_auth_backend_role.external_secrets auth/kubernetes/role/external-secrets
 import_if_missing vault_policy.external_secrets external-secrets
 import_if_missing vault_policy.vault_bootstrap vault-bootstrap
+import_if_missing vault_policy.terraform_vault terraform-vault
 import_if_missing vault_mount.kv kv
