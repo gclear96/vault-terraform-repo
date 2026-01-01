@@ -4,6 +4,12 @@ variable "vault_addr" {
   default     = "http://127.0.0.1:8200"
 }
 
+variable "vault_skip_child_token" {
+  type        = bool
+  description = "If true, the Vault provider will not attempt to create a limited child token (useful for CI tokens that cannot call auth/token/create)."
+  default     = false
+}
+
 variable "kubernetes_auth_path" {
   type        = string
   description = "Mount path for the Kubernetes auth method (no leading/trailing slashes)."

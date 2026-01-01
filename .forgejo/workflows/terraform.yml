@@ -65,6 +65,7 @@ jobs:
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
       TF_VAR_vault_addr: ${{ secrets.VAULT_ADDR }}
+      TF_VAR_vault_skip_child_token: "true"
       TF_S3_ENDPOINT: ${{ secrets.TF_S3_ENDPOINT }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
