@@ -64,6 +64,7 @@ jobs:
       TF_IN_AUTOMATION: "1"
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+      TF_VAR_vault_addr: ${{ secrets.VAULT_ADDR }}
       TF_S3_ENDPOINT: ${{ secrets.TF_S3_ENDPOINT }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -111,7 +112,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          : "${VAULT_ADDR:?Set Forgejo secret VAULT_ADDR (e.g. http://platform-vault.vault.svc:8200)}"
+          : "${TF_VAR_vault_addr:?Set Forgejo secret VAULT_ADDR (e.g. http://platform-vault.vault.svc:8200)}"
           : "${VAULT_TOKEN:?Set Forgejo secret VAULT_TOKEN (scoped token; avoid long-lived root)}"
           : "${TF_S3_ENDPOINT:?Set Forgejo secret TF_S3_ENDPOINT (e.g. http://platform-garage.garage.svc:3900)}"
           : "${AWS_ACCESS_KEY_ID:?Set Forgejo secret AWS_ACCESS_KEY_ID (Garage S3 key id)}"
