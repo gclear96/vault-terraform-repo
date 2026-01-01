@@ -36,14 +36,32 @@ jobs:
           if command -v terraform >/dev/null 2>&1; then
             terraform version
           else
-            sudo apt-get update
-            sudo apt-get install -y unzip
+            if ! command -v apt-get >/dev/null 2>&1; then
+              echo "apt-get not found; cannot auto-install terraform on this runner image." >&2
+              exit 2
+            fi
+            if [[ "$(id -u)" != "0" ]]; then
+              echo "Runner is not root and sudo is unavailable; cannot apt-get install terraform prerequisites." >&2
+              exit 2
+            fi
+            apt-get update
+            apt-get install -y ca-certificates curl unzip
             curl -fsSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.14.3/terraform_1.14.3_linux_amd64.zip
-            sudo unzip -o /tmp/terraform.zip -d /usr/local/bin
+            unzip -o /tmp/terraform.zip -d /usr/local/bin
             terraform version
           fi
-          sudo apt-get update
-          sudo apt-get install -y jq
+          if ! command -v jq >/dev/null 2>&1; then
+            if ! command -v apt-get >/dev/null 2>&1; then
+              echo "apt-get not found; cannot auto-install jq on this runner image." >&2
+              exit 2
+            fi
+            if [[ "$(id -u)" != "0" ]]; then
+              echo "Runner is not root and sudo is unavailable; cannot apt-get install jq." >&2
+              exit 2
+            fi
+            apt-get update
+            apt-get install -y jq
+          fi
 
       - name: "Guard: required secrets"
         shell: bash
