@@ -14,7 +14,7 @@ Manages Vault configuration declaratively using the Terraform Vault provider.
 - Policy `vault-bootstrap` (kept to reflect current instance; safe to remove later if unused)
 - Role `external-secrets` bound to:
   - service accounts: `vault-auth`, `platform-external-secrets`
-  - namespaces: `authentik`, `forgejo`, `external-secrets`
+  - namespaces: `authentik`, `forgejo`, `forgejo-runner`, `external-secrets`
   - TTL: ~1h
 - KV v2 secrets engine at `kv/`
 
@@ -176,12 +176,14 @@ This repo includes Forgejo Actions workflows under `.forgejo/workflows/`:
 
 Set these repo secrets in Forgejo:
 
-- `VAULT_ADDR` (example: `http://platform-vault.vault.svc:8200`)
+- `VAULT_ADDR` (example: `http://platform-vault.vault.svc:8200`) (workflows read from `secrets.*`, even though it’s not sensitive)
 - `VAULT_TOKEN` (use a scoped token; avoid long-lived root)
 - `TF_S3_ENDPOINT` (example: `http://platform-garage.garage.svc:3900`)
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (Garage S3 key credentials)
 
 Note: CI sets `TF_VAR_use_vault_local_sa_token=true` to avoid storing a Kubernetes reviewer JWT in Terraform state. Ensure the Vault ServiceAccount has TokenReview RBAC (see `talos-proxmox-platform-repo/clusters/homelab/bootstrap/rbac-vault-tokenreview.yaml`).
+
+Note: CI also sets `TF_VAR_vault_skip_child_token=true` because Forgejo automation tokens often should not have `auth/token/create` permission; the Vault provider otherwise tries to create a limited child token.
 
 ## Import existing resources (recommended)
 
