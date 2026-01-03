@@ -103,7 +103,7 @@ variable "external_secrets_role_bound_service_account_names" {
 variable "external_secrets_role_bound_service_account_namespaces" {
   type        = list(string)
   description = "Kubernetes namespaces allowed to authenticate to the external-secrets role."
-  default     = ["authentik", "forgejo", "forgejo-runner", "external-secrets"]
+  default     = ["authentik", "argocd", "forgejo", "forgejo-runner", "longhorn-system", "vault", "oauth2-proxy", "external-secrets"]
 }
 
 variable "external_secrets_role_token_ttl_seconds" {
@@ -122,4 +122,69 @@ variable "terraform_vault_policy_name" {
   type        = string
   description = "Name of the policy used by Terraform automation tokens."
   default     = "terraform-vault"
+}
+
+variable "oidc_auth_path" {
+  type        = string
+  description = "Mount path for the OIDC auth method (no leading/trailing slashes)."
+  default     = "oidc"
+}
+
+variable "oidc_discovery_url" {
+  type        = string
+  description = "OIDC discovery URL for Authentik (issuer base URL)."
+  default     = "https://authentik.k8s.magomago.moe/application/o/vault/"
+}
+
+variable "oidc_client_id" {
+  type        = string
+  description = "OIDC client ID registered in Authentik for Vault."
+  default     = "vault"
+}
+
+variable "oidc_client_secret" {
+  type        = string
+  description = "OIDC client secret for Vault (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "oidc_default_role" {
+  type        = string
+  description = "Default OIDC role name in Vault."
+  default     = "authentik"
+}
+
+variable "oidc_allowed_redirect_uris" {
+  type        = list(string)
+  description = "Allowed redirect URIs for the Vault OIDC role."
+  default = [
+    "https://vault.k8s.magomago.moe/ui/vault/auth/oidc/oidc/callback",
+    "http://localhost:8250/oidc/callback",
+  ]
+}
+
+variable "oidc_bound_audiences" {
+  type        = list(string)
+  description = "Bound audiences for the Vault OIDC role."
+  default     = ["vault"]
+}
+
+variable "oidc_user_claim" {
+  type        = string
+  description = "User claim to use as the Vault identity name."
+  default     = "sub"
+}
+
+variable "oidc_scopes" {
+  type        = list(string)
+  description = "OIDC scopes requested by Vault."
+  default     = ["openid", "profile", "email"]
+}
+
+variable "oidc_role_policies" {
+  type        = list(string)
+  description = "Vault policies attached to the default OIDC role."
+  default     = ["default"]
 }

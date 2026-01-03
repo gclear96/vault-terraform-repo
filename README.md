@@ -14,9 +14,10 @@ Manages Vault configuration declaratively using the Terraform Vault provider.
 - Policy `vault-bootstrap` (kept to reflect current instance; safe to remove later if unused)
 - Role `external-secrets` bound to:
   - service accounts: `vault-auth`, `platform-external-secrets`
-  - namespaces: `authentik`, `forgejo`, `forgejo-runner`, `external-secrets`
+  - namespaces: `authentik`, `argocd`, `forgejo`, `forgejo-runner`, `longhorn-system`, `vault`, `oauth2-proxy`, `external-secrets`
   - TTL: ~1h
 - KV v2 secrets engine at `kv/`
+- (Optional) OIDC auth mount at `auth/oidc/` for Authentik-backed login (enabled when `oidc_client_secret` is set)
 
 ## Security / state (important)
 
@@ -83,6 +84,19 @@ The `VAULT_TOKEN` you use for Terraform must be able to:
 - Write/read the Kubernetes auth config + role (`auth/kubernetes/*`)
 - Write/read the `external-secrets` policy (`sys/policies/acl/*`)
 - Manage the `kv/` mount (`sys/mounts/*`)
+- Enable/manage the OIDC auth mount (`sys/auth/*`) if you set `oidc_client_secret`
+
+## OIDC auth (Authentik)
+
+OIDC resources are created only when you provide `oidc_client_secret` (kept out of Git).
+
+Minimum env for local runs:
+
+```bash
+export TF_VAR_oidc_client_secret="...redacted..."
+```
+
+CI: set `OIDC_CLIENT_SECRET` in Forgejo secrets and map it to `TF_VAR_oidc_client_secret` in the workflow.
 
 This repo defines a recommended automation policy at `policies/terraform-vault.hcl` and manages it as `vault_policy.terraform_vault` (name: `terraform-vault` by default). Use a token with that policy for CI.
 
