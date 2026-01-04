@@ -64,6 +64,7 @@ resource "vault_generic_endpoint" "oidc_role" {
     bound_audiences       = var.oidc_bound_audiences
     allowed_redirect_uris = var.oidc_allowed_redirect_uris
     user_claim            = var.oidc_user_claim
+    groups_claim          = var.oidc_groups_claim
     oidc_scopes           = var.oidc_scopes
     policies              = var.oidc_role_policies
   })
@@ -96,6 +97,27 @@ resource "vault_policy" "vault_bootstrap" {
 resource "vault_policy" "terraform_vault" {
   name   = var.terraform_vault_policy_name
   policy = file("${path.module}/policies/terraform-vault.hcl")
+}
+
+resource "vault_policy" "vault_admin" {
+  name   = var.vault_admin_policy_name
+  policy = file("${path.module}/policies/vault-admin.hcl")
+}
+
+resource "vault_identity_group" "oidc_admin" {
+  count = local.oidc_enabled && var.oidc_admin_group != null ? 1 : 0
+
+  name     = var.oidc_admin_group
+  type     = "external"
+  policies = [vault_policy.vault_admin.name]
+}
+
+resource "vault_identity_group_alias" "oidc_admin" {
+  count = local.oidc_enabled && var.oidc_admin_group != null ? 1 : 0
+
+  name           = var.oidc_admin_group
+  mount_accessor = vault_auth_backend.oidc[0].accessor
+  canonical_id   = vault_identity_group.oidc_admin[0].id
 }
 
 resource "vault_kubernetes_auth_backend_role" "external_secrets" {

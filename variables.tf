@@ -180,11 +180,30 @@ variable "oidc_user_claim" {
 variable "oidc_scopes" {
   type        = list(string)
   description = "OIDC scopes requested by Vault."
-  default     = ["openid", "profile", "email"]
+  default     = ["openid", "profile", "email", "groups"]
+}
+
+variable "oidc_groups_claim" {
+  type        = string
+  description = "OIDC claim that contains group names."
+  default     = "groups"
 }
 
 variable "oidc_role_policies" {
   type        = list(string)
   description = "Vault policies attached to the default OIDC role."
   default     = ["default"]
+}
+
+variable "vault_admin_policy_name" {
+  type        = string
+  description = "Name of the Vault admin policy attached to the OIDC admin group."
+  default     = "vault-admin"
+}
+
+variable "oidc_admin_group" {
+  type        = string
+  description = "OIDC group name that should map to the Vault admin policy (set null to disable)."
+  default     = "platform-admins"
+  nullable    = true
 }
