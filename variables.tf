@@ -217,9 +217,10 @@ variable "manage_democratic_csi_truenas_secret" {
     condition = !var.manage_democratic_csi_truenas_secret || (
       var.democratic_csi_truenas_username != null && var.democratic_csi_truenas_username != "" &&
       var.democratic_csi_truenas_password != null && var.democratic_csi_truenas_password != "" &&
-      var.democratic_csi_truenas_ssh_password != null && var.democratic_csi_truenas_ssh_password != ""
+      var.democratic_csi_truenas_ssh_password != null && var.democratic_csi_truenas_ssh_password != "" &&
+      var.democratic_csi_truenas_api_key != null && var.democratic_csi_truenas_api_key != ""
     )
-    error_message = "When manage_democratic_csi_truenas_secret=true, set democratic_csi_truenas_username/password/ssh_password."
+    error_message = "When manage_democratic_csi_truenas_secret=true, set democratic_csi_truenas_username/password/ssh_password/api_key."
   }
 }
 
@@ -248,6 +249,14 @@ variable "democratic_csi_truenas_password" {
 variable "democratic_csi_truenas_ssh_password" {
   type        = string
   description = "TrueNAS SSH password for democratic-csi (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "democratic_csi_truenas_api_key" {
+  type        = string
+  description = "TrueNAS API key for democratic-csi (sensitive; do not commit)."
   default     = null
   nullable    = true
   sensitive   = true

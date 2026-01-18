@@ -99,6 +99,7 @@ resource "vault_kv_secret_v2" "democratic_csi_truenas" {
     username     = var.democratic_csi_truenas_username
     password     = var.democratic_csi_truenas_password
     ssh_password = var.democratic_csi_truenas_ssh_password
+    api_key      = var.democratic_csi_truenas_api_key
   })
 
   depends_on = [vault_mount.kv]
