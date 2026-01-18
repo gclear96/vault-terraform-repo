@@ -89,6 +89,21 @@ resource "vault_mount" "kv" {
   listing_visibility = "hidden"
 }
 
+resource "vault_kv_secret_v2" "democratic_csi_truenas" {
+  count = var.manage_democratic_csi_truenas_secret ? 1 : 0
+
+  mount = vault_mount.kv.path
+  name  = var.democratic_csi_truenas_secret_name
+
+  data_json = jsonencode({
+    username     = var.democratic_csi_truenas_username
+    password     = var.democratic_csi_truenas_password
+    ssh_password = var.democratic_csi_truenas_ssh_password
+  })
+
+  depends_on = [vault_mount.kv]
+}
+
 resource "vault_policy" "vault_bootstrap" {
   name   = var.vault_bootstrap_policy_name
   policy = file("${path.module}/policies/vault-bootstrap.hcl")

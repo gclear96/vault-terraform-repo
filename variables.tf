@@ -207,3 +207,48 @@ variable "oidc_admin_group" {
   default     = "platform-admins"
   nullable    = true
 }
+
+variable "manage_democratic_csi_truenas_secret" {
+  type        = bool
+  description = "Whether to manage the democratic-csi TrueNAS secret in Vault."
+  default     = true
+
+  validation {
+    condition = !var.manage_democratic_csi_truenas_secret || (
+      var.democratic_csi_truenas_username != null && var.democratic_csi_truenas_username != "" &&
+      var.democratic_csi_truenas_password != null && var.democratic_csi_truenas_password != "" &&
+      var.democratic_csi_truenas_ssh_password != null && var.democratic_csi_truenas_ssh_password != ""
+    )
+    error_message = "When manage_democratic_csi_truenas_secret=true, set democratic_csi_truenas_username/password/ssh_password."
+  }
+}
+
+variable "democratic_csi_truenas_secret_name" {
+  type        = string
+  description = "Vault KV path (under kv/) for democratic-csi TrueNAS credentials."
+  default     = "democratic-csi/truenas"
+}
+
+variable "democratic_csi_truenas_username" {
+  type        = string
+  description = "TrueNAS API/SSH username for democratic-csi (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "democratic_csi_truenas_password" {
+  type        = string
+  description = "TrueNAS API password for democratic-csi (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "democratic_csi_truenas_ssh_password" {
+  type        = string
+  description = "TrueNAS SSH password for democratic-csi (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
