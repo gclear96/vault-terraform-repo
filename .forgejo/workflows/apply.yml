@@ -9,7 +9,7 @@ on:
         default: "false"
 
 concurrency:
-  group: vault-terraform
+  group: ${{ github.repository }}-terraform-apply-main
   cancel-in-progress: false
 
 jobs:

@@ -5,10 +5,6 @@ on:
   push:
     branches: ["main"]
 
-concurrency:
-  group: vault-terraform
-  cancel-in-progress: false
-
 jobs:
   fmt_validate:
     runs-on: ubuntu-latest
@@ -60,6 +56,9 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     needs: [fmt_validate]
+    concurrency:
+      group: ${{ github.repository }}-terraform-apply-main
+      cancel-in-progress: false
     env:
       TF_IN_AUTOMATION: "1"
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
