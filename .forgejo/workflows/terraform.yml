@@ -154,7 +154,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          terraform plan -input=false -no-color -out=plan.tfplan
+          terraform plan -input=false -no-color \
+            -var='manage_authentik_env_secret=true' \
+            -var='manage_democratic_csi_truenas_secret=true' \
+            -out=plan.tfplan
 
       - name: "Guard: block destructive changes by default"
         shell: bash
