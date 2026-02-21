@@ -208,6 +208,85 @@ variable "oidc_admin_group" {
   nullable    = true
 }
 
+variable "manage_authentik_env_secret" {
+  type        = bool
+  description = "Whether to manage the Authentik env secret in Vault (kv/authentik/env)."
+  default     = true
+
+  validation {
+    condition = !var.manage_authentik_env_secret || (
+      var.authentik_secret_key != null && var.authentik_secret_key != "" &&
+      var.authentik_postgresql_password != null && var.authentik_postgresql_password != "" &&
+      var.authentik_oauth_grafana_client_secret != null && var.authentik_oauth_grafana_client_secret != "" &&
+      var.authentik_oauth_argocd_client_secret != null && var.authentik_oauth_argocd_client_secret != "" &&
+      var.authentik_oauth_forgejo_client_secret != null && var.authentik_oauth_forgejo_client_secret != "" &&
+      var.authentik_oauth_longhorn_client_secret != null && var.authentik_oauth_longhorn_client_secret != ""
+    )
+    error_message = "When manage_authentik_env_secret=true, set authentik_secret_key, authentik_postgresql_password, and all authentik_oauth_*_client_secret values."
+  }
+}
+
+variable "authentik_env_secret_name" {
+  type        = string
+  description = "Vault KV path (under kv/) for Authentik env secrets."
+  default     = "authentik/env"
+}
+
+variable "authentik_secret_key" {
+  type        = string
+  description = "Authentik SECRET_KEY (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "authentik_postgresql_password" {
+  type        = string
+  description = "Authentik PostgreSQL password (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "authentik_oauth_grafana_client_secret" {
+  type        = string
+  description = "Grafana OAuth client secret from Authentik (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "authentik_oauth_argocd_client_secret" {
+  type        = string
+  description = "Argo CD OAuth client secret from Authentik (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "authentik_oauth_forgejo_client_secret" {
+  type        = string
+  description = "Forgejo OAuth client secret from Authentik (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "authentik_oauth_longhorn_client_secret" {
+  type        = string
+  description = "Longhorn OAuth client secret from Authentik (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "authentik_env_extra" {
+  type        = map(string)
+  description = "Optional extra keys to include in kv/authentik/env (sensitive; do not commit)."
+  default     = {}
+  sensitive   = true
+}
+
 variable "manage_democratic_csi_truenas_secret" {
   type        = bool
   description = "Whether to manage the democratic-csi TrueNAS secret in Vault."

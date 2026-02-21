@@ -14,7 +14,7 @@ Manages Vault configuration declaratively using the Terraform Vault provider.
 - Policy `vault-bootstrap` (kept to reflect current instance; safe to remove later if unused)
 - Role `external-secrets` bound to:
   - service accounts: `vault-auth`, `platform-external-secrets`
-  - namespaces: `authentik`, `argocd`, `forgejo`, `forgejo-runner`, `longhorn-system`, `vault`, `oauth2-proxy`, `external-secrets`
+  - namespaces: `authentik`, `argocd`, `forgejo`, `forgejo-runner`, `longhorn-system`, `democratic-csi`, `vault`, `oauth2-proxy`, `external-secrets`
   - TTL: ~1h
 - KV v2 secrets engine at `kv/`
 - (Optional) OIDC auth mount at `auth/oidc/` for Authentik-backed login (enabled when `oidc_client_secret` is set)
@@ -99,6 +99,56 @@ export TF_VAR_oidc_client_secret="...redacted..."
 CI: set `OIDC_CLIENT_SECRET` in Forgejo secrets and map it to `TF_VAR_oidc_client_secret` in the workflow.
 
 This repo defines a recommended automation policy at `policies/terraform-vault.hcl` and manages it as `vault_policy.terraform_vault` (name: `terraform-vault` by default). Use a token with that policy for CI.
+
+## Authentik env secret (authoritative)
+
+This repo manages the Vault KV entry used by Authentik and several OIDC clients:
+
+- Vault path (KV v2): `kv/authentik/env`
+- Required keys:
+  - `AUTHENTIK_SECRET_KEY`
+  - `AUTHENTIK_POSTGRESQL__PASSWORD`
+  - `AUTHENTIK_OAUTH_GRAFANA_CLIENT_SECRET`
+  - `AUTHENTIK_OAUTH_ARGOCD_CLIENT_SECRET`
+  - `AUTHENTIK_OAUTH_FORGEJO_CLIENT_SECRET`
+  - `AUTHENTIK_OAUTH_LONGHORN_CLIENT_SECRET`
+
+This is enabled by default (`manage_authentik_env_secret=true`). When enabled, Terraform **overwrites** `kv/authentik/env` with these keys (plus any `authentik_env_extra` you provide).
+Make sure you supply the existing values to avoid breaking Authentik or downstream apps.
+
+Enable it with:
+
+```bash
+export TF_VAR_manage_authentik_env_secret=true
+export TF_VAR_authentik_secret_key="...redacted..."
+export TF_VAR_authentik_postgresql_password="...redacted..."
+export TF_VAR_authentik_oauth_grafana_client_secret="...redacted..."
+export TF_VAR_authentik_oauth_argocd_client_secret="...redacted..."
+export TF_VAR_authentik_oauth_forgejo_client_secret="...redacted..."
+export TF_VAR_authentik_oauth_longhorn_client_secret="...redacted..."
+```
+
+Tip: keep these values in a local gitignored env file (e.g. `out/authentik.env`) and `source` it before `terraform plan/apply`.
+
+## Democratic-csi TrueNAS secret (optional)
+
+This repo can manage the Vault KV entry used by democratic-csi:
+
+- Vault path (KV v2): `kv/democratic-csi/truenas`
+- Required keys: `username`, `password`, `ssh_password`, `api_key`
+
+Enable it with:
+
+```bash
+export TF_VAR_manage_democratic_csi_truenas_secret=true
+export TF_VAR_democratic_csi_truenas_username="csi"
+export TF_VAR_democratic_csi_truenas_password="...redacted..."
+export TF_VAR_democratic_csi_truenas_ssh_password="...redacted..."
+export TF_VAR_democratic_csi_truenas_api_key="...redacted..."
+```
+
+Tip: keep these values in a local gitignored env file (e.g. `out/democratic-csi.env`) and `source` it before
+`terraform plan/apply`.
 
 ## Connect to Vault (port-forward)
 
