@@ -66,6 +66,13 @@ jobs:
       TF_VAR_vault_addr: ${{ secrets.VAULT_ADDR }}
       TF_VAR_vault_skip_child_token: "true"
       TF_VAR_oidc_client_secret: ${{ secrets.OIDC_CLIENT_SECRET }}
+      TF_VAR_manage_authentik_env_secret: "true"
+      TF_VAR_authentik_secret_key: ${{ secrets.AUTHENTIK_SECRET_KEY }}
+      TF_VAR_authentik_postgresql_password: ${{ secrets.AUTHENTIK_POSTGRESQL_PASSWORD }}
+      TF_VAR_authentik_oauth_grafana_client_secret: ${{ secrets.AUTHENTIK_OAUTH_GRAFANA_CLIENT_SECRET }}
+      TF_VAR_authentik_oauth_argocd_client_secret: ${{ secrets.AUTHENTIK_OAUTH_ARGOCD_CLIENT_SECRET }}
+      TF_VAR_authentik_oauth_forgejo_client_secret: ${{ secrets.AUTHENTIK_OAUTH_FORGEJO_CLIENT_SECRET }}
+      TF_VAR_authentik_oauth_longhorn_client_secret: ${{ secrets.AUTHENTIK_OAUTH_LONGHORN_CLIENT_SECRET }}
       TF_VAR_manage_democratic_csi_truenas_secret: "true"
       TF_VAR_democratic_csi_truenas_username: ${{ secrets.DEMOCRATIC_CSI_TRUENAS_USERNAME }}
       TF_VAR_democratic_csi_truenas_password: ${{ secrets.DEMOCRATIC_CSI_TRUENAS_PASSWORD }}
