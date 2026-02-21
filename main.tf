@@ -96,11 +96,11 @@ resource "vault_kv_secret_v2" "authentik_env" {
   name  = var.authentik_env_secret_name
 
   data_json = jsonencode(merge({
-    AUTHENTIK_SECRET_KEY                 = var.authentik_secret_key
-    AUTHENTIK_POSTGRESQL__PASSWORD       = var.authentik_postgresql_password
-    AUTHENTIK_OAUTH_GRAFANA_CLIENT_SECRET = var.authentik_oauth_grafana_client_secret
-    AUTHENTIK_OAUTH_ARGOCD_CLIENT_SECRET  = var.authentik_oauth_argocd_client_secret
-    AUTHENTIK_OAUTH_FORGEJO_CLIENT_SECRET = var.authentik_oauth_forgejo_client_secret
+    AUTHENTIK_SECRET_KEY                   = var.authentik_secret_key
+    AUTHENTIK_POSTGRESQL__PASSWORD         = var.authentik_postgresql_password
+    AUTHENTIK_OAUTH_GRAFANA_CLIENT_SECRET  = var.authentik_oauth_grafana_client_secret
+    AUTHENTIK_OAUTH_ARGOCD_CLIENT_SECRET   = var.authentik_oauth_argocd_client_secret
+    AUTHENTIK_OAUTH_FORGEJO_CLIENT_SECRET  = var.authentik_oauth_forgejo_client_secret
     AUTHENTIK_OAUTH_LONGHORN_CLIENT_SECRET = var.authentik_oauth_longhorn_client_secret
   }, var.authentik_env_extra))
 
