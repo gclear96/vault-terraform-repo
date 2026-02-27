@@ -34,6 +34,15 @@ jobs:
       TF_VAR_democratic_csi_truenas_password: ${{ secrets.DEMOCRATIC_CSI_TRUENAS_PASSWORD }}
       TF_VAR_democratic_csi_truenas_ssh_password: ${{ secrets.DEMOCRATIC_CSI_TRUENAS_SSH_PASSWORD }}
       TF_VAR_democratic_csi_truenas_api_key: ${{ secrets.DEMOCRATIC_CSI_TRUENAS_API_KEY }}
+      TF_VAR_manage_backup_s3_secret: "true"
+      TF_VAR_backup_s3_endpoint: ${{ secrets.BACKUP_S3_ENDPOINT }}
+      TF_VAR_backup_s3_region: ${{ secrets.BACKUP_S3_REGION }}
+      TF_VAR_backup_s3_access_key_id: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+      TF_VAR_backup_s3_secret_access_key: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+      TF_VAR_backup_s3_velero_bucket: ${{ secrets.BACKUP_S3_VELERO_BUCKET }}
+      TF_VAR_backup_s3_etcd_bucket: ${{ secrets.BACKUP_S3_ETCD_BUCKET }}
+      TF_VAR_backup_s3_vault_bucket: ${{ secrets.BACKUP_S3_VAULT_BUCKET }}
+      TF_VAR_backup_s3_authentik_bucket: ${{ secrets.BACKUP_S3_AUTHENTIK_BUCKET }}
       TF_S3_ENDPOINT: ${{ secrets.TF_S3_ENDPOINT }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -87,6 +96,9 @@ jobs:
           : "${TF_S3_ENDPOINT:?Set Forgejo secret TF_S3_ENDPOINT (e.g. http://platform-garage.garage.svc:3900)}"
           : "${AWS_ACCESS_KEY_ID:?Set Forgejo secret AWS_ACCESS_KEY_ID (Garage S3 key id)}"
           : "${AWS_SECRET_ACCESS_KEY:?Set Forgejo secret AWS_SECRET_ACCESS_KEY (Garage S3 secret key)}"
+          : "${TF_VAR_backup_s3_endpoint:?Set Forgejo secret BACKUP_S3_ENDPOINT (e.g. http://192.168.50.240:8333)}"
+          : "${TF_VAR_backup_s3_access_key_id:?Set Forgejo secret BACKUP_S3_ACCESS_KEY_ID}"
+          : "${TF_VAR_backup_s3_secret_access_key:?Set Forgejo secret BACKUP_S3_SECRET_ACCESS_KEY}"
 
       - name: Terraform init
         shell: bash
@@ -114,6 +126,7 @@ jobs:
           terraform plan -input=false -no-color \
             -var='manage_authentik_env_secret=true' \
             -var='manage_democratic_csi_truenas_secret=true' \
+            -var='manage_backup_s3_secret=true' \
             -out=plan.tfplan
 
       - name: "Guard: destructive plan requires allow_destructive=true"

@@ -123,6 +123,26 @@ resource "vault_kv_secret_v2" "democratic_csi_truenas" {
   depends_on = [vault_mount.kv]
 }
 
+resource "vault_kv_secret_v2" "backup_s3" {
+  count = var.manage_backup_s3_secret ? 1 : 0
+
+  mount = vault_mount.kv.path
+  name  = var.backup_s3_secret_name
+
+  data_json = jsonencode(merge({
+    endpoint              = var.backup_s3_endpoint
+    region                = var.backup_s3_region
+    AWS_ACCESS_KEY_ID     = var.backup_s3_access_key_id
+    AWS_SECRET_ACCESS_KEY = var.backup_s3_secret_access_key
+    velero_bucket         = var.backup_s3_velero_bucket
+    etcd_bucket           = var.backup_s3_etcd_bucket
+    vault_bucket          = var.backup_s3_vault_bucket
+    authentik_bucket      = var.backup_s3_authentik_bucket
+  }, var.backup_s3_extra))
+
+  depends_on = [vault_mount.kv]
+}
+
 resource "vault_policy" "vault_bootstrap" {
   name   = var.vault_bootstrap_policy_name
   policy = file("${path.module}/policies/vault-bootstrap.hcl")

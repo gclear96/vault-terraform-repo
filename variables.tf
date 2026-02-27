@@ -103,7 +103,7 @@ variable "external_secrets_role_bound_service_account_names" {
 variable "external_secrets_role_bound_service_account_namespaces" {
   type        = list(string)
   description = "Kubernetes namespaces allowed to authenticate to the external-secrets role."
-  default     = ["authentik", "argocd", "forgejo", "forgejo-runner", "longhorn-system", "democratic-csi", "vault", "oauth2-proxy", "external-secrets"]
+  default     = ["authentik", "argocd", "forgejo", "forgejo-runner", "longhorn-system", "democratic-csi", "vault", "oauth2-proxy", "external-secrets", "velero"]
 }
 
 variable "external_secrets_role_token_ttl_seconds" {
@@ -338,5 +338,86 @@ variable "democratic_csi_truenas_api_key" {
   description = "TrueNAS API key for democratic-csi (sensitive; do not commit)."
   default     = null
   nullable    = true
+  sensitive   = true
+}
+
+variable "manage_backup_s3_secret" {
+  type        = bool
+  description = "Whether to manage external backup S3 credentials/settings in Vault."
+  default     = false
+
+  validation {
+    condition = !var.manage_backup_s3_secret || (
+      var.backup_s3_endpoint != null && var.backup_s3_endpoint != "" &&
+      var.backup_s3_access_key_id != null && var.backup_s3_access_key_id != "" &&
+      var.backup_s3_secret_access_key != null && var.backup_s3_secret_access_key != ""
+    )
+    error_message = "When manage_backup_s3_secret=true, set backup_s3_endpoint, backup_s3_access_key_id, and backup_s3_secret_access_key."
+  }
+}
+
+variable "backup_s3_secret_name" {
+  type        = string
+  description = "Vault KV path (under kv/) for backup S3 credentials/settings."
+  default     = "backup/s3"
+}
+
+variable "backup_s3_endpoint" {
+  type        = string
+  description = "S3 endpoint for external backup storage (e.g. http://192.168.50.240:8333)."
+  default     = null
+  nullable    = true
+}
+
+variable "backup_s3_region" {
+  type        = string
+  description = "S3 region for backup clients using S3-compatible storage."
+  default     = "us-east-1"
+}
+
+variable "backup_s3_access_key_id" {
+  type        = string
+  description = "S3 access key id for backup clients (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "backup_s3_secret_access_key" {
+  type        = string
+  description = "S3 secret access key for backup clients (sensitive; do not commit)."
+  default     = null
+  nullable    = true
+  sensitive   = true
+}
+
+variable "backup_s3_velero_bucket" {
+  type        = string
+  description = "Bucket for Velero backups."
+  default     = "k8s-velero"
+}
+
+variable "backup_s3_etcd_bucket" {
+  type        = string
+  description = "Bucket for etcd snapshots."
+  default     = "k8s-etcd"
+}
+
+variable "backup_s3_vault_bucket" {
+  type        = string
+  description = "Bucket for Vault raft snapshots."
+  default     = "k8s-vault-raft"
+}
+
+variable "backup_s3_authentik_bucket" {
+  type        = string
+  description = "Bucket for Authentik DB backups."
+  default     = "k8s-authentik-db"
+}
+
+variable "backup_s3_extra" {
+  type        = map(string)
+  description = "Optional extra keys to include in kv/backup/s3 (sensitive; do not commit)."
+  default     = {}
   sensitive   = true
 }

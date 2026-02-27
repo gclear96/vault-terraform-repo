@@ -14,7 +14,7 @@ Manages Vault configuration declaratively using the Terraform Vault provider.
 - Policy `vault-bootstrap` (kept to reflect current instance; safe to remove later if unused)
 - Role `external-secrets` bound to:
   - service accounts: `vault-auth`, `platform-external-secrets`
-  - namespaces: `authentik`, `argocd`, `forgejo`, `forgejo-runner`, `longhorn-system`, `democratic-csi`, `vault`, `oauth2-proxy`, `external-secrets`
+  - namespaces: `authentik`, `argocd`, `forgejo`, `forgejo-runner`, `longhorn-system`, `democratic-csi`, `vault`, `oauth2-proxy`, `external-secrets`, `velero`
   - TTL: ~1h
 - KV v2 secrets engine at `kv/`
 - (Optional) OIDC auth mount at `auth/oidc/` for Authentik-backed login (enabled when `oidc_client_secret` is set)
@@ -150,6 +150,31 @@ export TF_VAR_democratic_csi_truenas_api_key="...redacted..."
 Tip: keep these values in a local gitignored env file (e.g. `out/democratic-csi.env`) and `source` it before
 `terraform plan/apply`.
 
+## External backup S3 secret (optional)
+
+This repo can manage a Vault KV entry used by backup jobs and Velero:
+
+- Vault path (KV v2): `kv/backup/s3`
+- Required keys when enabled:
+  - `endpoint`
+  - `region`
+  - `AWS_ACCESS_KEY_ID`
+  - `AWS_SECRET_ACCESS_KEY`
+  - `velero_bucket`
+  - `etcd_bucket`
+  - `vault_bucket`
+  - `authentik_bucket`
+
+Enable it with:
+
+```bash
+export TF_VAR_manage_backup_s3_secret=true
+export TF_VAR_backup_s3_endpoint="http://192.168.50.240:8333"
+export TF_VAR_backup_s3_region="us-east-1"
+export TF_VAR_backup_s3_access_key_id="...redacted..."
+export TF_VAR_backup_s3_secret_access_key="...redacted..."
+```
+
 ## Connect to Vault (port-forward)
 
 In one terminal:
@@ -244,6 +269,10 @@ Set these repo secrets in Forgejo:
 - `VAULT_TOKEN` (use a scoped token; avoid long-lived root)
 - `TF_S3_ENDPOINT` (example: `http://platform-garage.garage.svc:3900`)
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (Garage S3 key credentials)
+- `BACKUP_S3_ENDPOINT` (example: `http://192.168.50.240:8333`)
+- `BACKUP_S3_REGION` (example: `us-east-1`, optional; defaults in Terraform)
+- `BACKUP_S3_ACCESS_KEY_ID` / `BACKUP_S3_SECRET_ACCESS_KEY` (SeaweedFS backup S3 credentials)
+- `BACKUP_S3_VELERO_BUCKET` / `BACKUP_S3_ETCD_BUCKET` / `BACKUP_S3_VAULT_BUCKET` / `BACKUP_S3_AUTHENTIK_BUCKET` (optional bucket overrides)
 
 Note: CI sets `TF_VAR_use_vault_local_sa_token=true` to avoid storing a Kubernetes reviewer JWT in Terraform state. Ensure the Vault ServiceAccount has TokenReview RBAC (see `talos-proxmox-platform-repo/clusters/homelab/bootstrap/rbac-vault-tokenreview.yaml`).
 
